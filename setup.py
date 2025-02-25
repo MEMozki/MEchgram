@@ -1,8 +1,8 @@
 from setuptools import setup, find_packages
 setup(
-    name="Mechgram",
-    version="1.1.1",
-    description="Unique library for creating Telegram bots with fluent interface ",
+    name="mechgram",
+    version="1.2.0",
+    description="Telegram bot api via requests",
     author="MEMozki",
     author_email="memerz@list.ru",
     packages=find_packages(),

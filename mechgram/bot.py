@@ -9,7 +9,7 @@ class Bot:
         self.routes[command] = handler
         return self
     def run(self):
-        print("The bot has been launched.\n© Mechgram, 2024.")
+        print("The bot has been launched.\n© Mechgram, 2025.")
         while True:
             updates = self._get_updates()
             for update in updates:

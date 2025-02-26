@@ -1,4 +1,5 @@
-import requests, time class Bot:
+import requests, time
+class Bot:
     def __init__(self, token: str, polling_interval: float = 1.2):
         self.token = token
         self.polling_interval = polling_interval

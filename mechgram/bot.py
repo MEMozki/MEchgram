@@ -64,9 +64,11 @@ class Bot:
                 return updates
             else:
                 if data.get("error_code") == 401:
-                    print("[!] Connection error.")
+                    print("[!] The token is out of date.")
                 else:
                     print("[!] API error:", data)
+        except requests.exceptions.ConnectionError:
+            print("[!] Connection error.")
         except Exception as e:
             print("[!] Error getting updates:", e)
         return []

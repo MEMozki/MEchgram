@@ -24,7 +24,8 @@
    pip install .
    ```
 
-## Or
+## Or:
+Download via Curl: 
    ```bash
    python -c "$(curl -fsSL https://raw.githubusercontent.com/MEMozki/MEchgram/refs/heads/main/Install.py)"
    ```

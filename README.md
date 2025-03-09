@@ -23,3 +23,8 @@
    ```bash
    pip install .
    ```
+
+## Or
+   ```bash
+   python -c "$(curl -fsSL https://raw.githubusercontent.com/MEMozki/MEchgram/refs/heads/main/Install.py)"
+   ```

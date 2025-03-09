@@ -1,4 +1,4 @@
-# Mechgram
+# MEchgram
 
 **MEchgram** is a unique library for building Telegram bots using a fluent interface. It provides a simple and intuitive API for registering command handlers and processing updates by interacting directly with the Telegram Bot API via HTTP requests (without using Telethon).
 

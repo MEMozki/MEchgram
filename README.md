@@ -25,7 +25,13 @@
    ```
 
 ## Or:
-Download via Curl: 
+
+1. Download Curl: 
+   ```bash
+   apt install curl
+   ```
+
+2. Download via Curl:
    ```bash
    python -c "$(curl -fsSL https://raw.githubusercontent.com/MEMozki/MEchgram/refs/heads/main/Install.py)"
    ```

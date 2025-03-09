@@ -21,7 +21,7 @@
 
 2. Install the library:
    ```bash
-   pip install .
+   python3 Install.py
    ```
 
 ## Or:

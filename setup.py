@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 setup(
     name="MEchgram",
-    version="1.4.1",
+    version="2.0.0",
     description="Telegram bot api via requests",
     url="https://github.com/MEMozki/MEchgram",
     author="MEMozki",

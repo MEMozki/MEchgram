@@ -35,3 +35,6 @@
    ```bash
    python -c "$(curl -fsSL https://raw.githubusercontent.com/MEMozki/MEchgram/refs/heads/main/Install.py)"
    ```
+
+### Documentation:
+    t.me/MEchgrambot/Documentation

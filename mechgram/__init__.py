@@ -1,3 +1,4 @@
 from .bot import Bot
 from .types import Types
-__all__ = ["Bot", "Types"]
+from .fsm import FSMContext
+__all__ = ["Bot", "Types", "FSMContext"]

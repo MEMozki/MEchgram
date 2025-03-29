@@ -1,4 +1,5 @@
 import requests, time, sys, os, hashlib, asyncio
+from .fsm import FSMContext
 os.system("cls|clear")
 print("[!] Connections to the SMECh protocol...")
 class Bot:
@@ -10,6 +11,7 @@ class Bot:
         self.inline_handler = None
         self.callback_handler = None
         self.offset = 0
+        self.fsm = FSMContext()
     def on(self, command: str, handler=None):
         if handler is None:
             def decorator(func):

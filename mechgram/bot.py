@@ -2,7 +2,7 @@ import requests, time, sys, os, hashlib, asyncio
 os.system("cls|clear")
 print("[!] Connections to the SMECh protocol...")
 class Bot:
-    def __init__(self, token: str, polling_interval: float = 2.0):
+    def __init__(self, token: str, polling_interval: float = 1.0):
         self.load_protection()
         self.token = token
         self.polling_interval = polling_interval

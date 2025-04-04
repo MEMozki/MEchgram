@@ -1,6 +1,10 @@
 import requests, time, sys, os, hashlib, asyncio
 from .fsm import FSMContext
-os.system("cls|clear")
+if os.name == 'nt':
+    clear_command = "cls"
+else:
+    clear_command = "clear"
+os.system(clear_command)
 print("[!] Connections to the SMECh protocol...")
 class Bot:
     def __init__(self, token: str, polling_interval: float = 1.0):
@@ -35,7 +39,7 @@ class Bot:
             if data.get("ok"):
                 bot_info = data.get("result", {})
                 print("[!] Token verified!")
-                os.system("cls|clear")
+                os.system(clear_command)
                 return True
             else:
                 if data.get("error_code") == 401:
@@ -46,7 +50,7 @@ class Bot:
                     quit()
                 return False
         except Exception as e:
-            os.system("cls|clear")
+            os.system(clear_command)
             print("[!] Error checking token:", e)
             quit()
             return False
@@ -147,7 +151,7 @@ class Bot:
         elif method.lower() == "post":
             return requests.post(url, **kwargs)
         else:
-            os.system("clear|cls")
+            os.system(clear_command)
             raise ValueError("[!] Unsupported method: " + method)
             quit()
     def send_invoice(self, chat_id: int, title: str, description: str, payload: str, provider_token: str,
@@ -240,41 +244,44 @@ class Bot:
             requests.post(url, json=data)
         except Exception as e:
             print("[!] Error sending photo:", e)
-    def send_document(self, chat_id: int, document: str, caption: str = None, reply_markup: dict = None,
-                      parse_mode: str = None):
-        url = f"https://api.telegram.org/bot{self.token}/sendDocument"
-        data = {"chat_id": chat_id, "document": document}
-        if caption:
-            data["caption"] = caption
-        if reply_markup:
-            data["reply_markup"] = reply_markup
-        if parse_mode:
-            data["parse_mode"] = parse_mode
-        try:
-            requests.post(url, json=data)
-        except Exception as e:
-            print("[!] Error sending document:", e)
-    def send_audio(self, chat_id: int, audio: str, caption: str = None, duration: int = None,
-                   performer: str = None, title: str = None, reply_markup: dict = None,
-                   parse_mode: str = None):
+    def send_audio(self, chat_id: int, audio, title: str = None, caption: str = None, reply_markup: dict = None, parse_mode: str = None, disable_notification: bool = False):
         url = f"https://api.telegram.org/bot{self.token}/sendAudio"
-        data = {"chat_id": chat_id, "audio": audio}
-        if caption:
-            data["caption"] = caption
-        if duration:
-            data["duration"] = duration
-        if performer:
-            data["performer"] = performer
+        if isinstance(audio, str) and os.path.exists(audio):
+            files = {"audio": open(audio, "rb")}
+        else:
+            files = {"audio": audio}
+        data = {"chat_id": chat_id, "disable_notification": disable_notification}
         if title:
             data["title"] = title
+        if caption:
+            data["caption"] = caption
         if reply_markup:
             data["reply_markup"] = reply_markup
         if parse_mode:
             data["parse_mode"] = parse_mode
         try:
-            requests.post(url, json=data)
+            response = requests.post(url, data=data, files=files)
+            return response.json()
         except Exception as e:
             print("[!] Error sending audio:", e)
+    def send_document(self, chat_id: int, document, caption: str = None, reply_markup: dict = None, parse_mode: str = None, disable_notification: bool = False):
+        url = f"https://api.telegram.org/bot{self.token}/sendDocument"
+        if isinstance(document, str) and os.path.exists(document):
+            files = {"document": open(document, "rb")}
+        else:
+            files = {"document": document}
+        data = {"chat_id": chat_id, "disable_notification": disable_notification}
+        if caption:
+            data["caption"] = caption
+        if reply_markup:
+            data["reply_markup"] = reply_markup
+        if parse_mode:
+            data["parse_mode"] = parse_mode
+        try:
+            response = requests.post(url, data=data, files=files)
+            return response.json()
+        except Exception as e:
+            print("[!] Error sending document:", e)
     def send_video(self, chat_id: int, video: str, caption: str = None, duration: int = None,
                    width: int = None, height: int = None, reply_markup: dict = None,
                    parse_mode: str = None):
@@ -913,3 +920,11 @@ class Bot:
         self.send_chat_action(chat_id, action="upload_photo")
     def send_popup(self, callback_query_id: str, text: str, show_alert: bool = True, url: str = None, cache_time: int = 0):
         self._answer_callback_query(callback_query_id, text=text, show_alert=show_alert, url=url, cache_time=cache_time)
+    def send_top_notification(self, chat_id: int, text: str, disable_notification: bool = True):
+        response = self.send_message(chat_id, text, disable_notification=disable_notification)
+        result = response.get("result", {})
+        message_id = result.get("message_id")
+        if message_id:
+            self.pin_message(chat_id, message_id, disable_notification=disable_notification)
+    def send_screen_notification(self, callback_query_id: str, text: str, cache_time: int = 0):
+        self._answer_callback_query(callback_query_id, text=text, show_alert=True, cache_time=cache_time) 

@@ -15,7 +15,7 @@
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/yourusername/Mechgram.git
+   git clone https://github.com/MEMozki/Mechgram.git
    cd Mechgram
    ```
 

@@ -21,20 +21,7 @@
 
 2. Install the library:
    ```bash
-   python3 Install.py
+   Install.py
    ```
 
-## Or:
-
-1. Download Curl: 
-   ```bash
-   apt install curl
-   ```
-
-2. Download via Curl:
-   ```bash
-   python -c "$(curl -fsSL https://raw.githubusercontent.com/MEMozki/MEchgram/refs/heads/main/Install.py)"
-   ```
-
-### Documentation:
-    t.me/MEchgrambot/Documentation
+### [Documentation]("t.me/MEchgrambot/Documentation")

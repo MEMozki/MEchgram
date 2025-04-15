@@ -5,7 +5,7 @@
 ## Features
 
 - **Unique Syntax:** Register command handlers through method chaining (fluent interface), resulting in clean and readable code.
-- **Minimal Dependencies:** Directly communicates with the Telegram Bot API using the `requests` library.
+- **Minimal Dependencies:** Directly communicates with the Telegram Bot API using the `requests` & `asyncio` library.
 - **Easy Installation:** Install locally from source using `python3 pip install .` or via Curl.
 
 ## Installation

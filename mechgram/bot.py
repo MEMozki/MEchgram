@@ -1,5 +1,4 @@
 import requests, time, sys, os, hashlib, asyncio
-from .fsm import FSMContext
 if os.name == 'nt':
     clear_command = "cls"
 else:
@@ -15,7 +14,6 @@ class Bot:
         self.inline_handler = None
         self.callback_handler = None
         self.offset = 0
-        self.fsm = FSMContext()
     def on(self, command: str, handler=None):
         if handler is None:
             def decorator(func):
@@ -928,3 +926,73 @@ class Bot:
             self.pin_message(chat_id, message_id, disable_notification=disable_notification)
     def send_screen_notification(self, callback_query_id: str, text: str, cache_time: int = 0):
         self._answer_callback_query(callback_query_id, text=text, show_alert=True, cache_time=cache_time) 
+    def read_business_message(self, chat_id: int, message_id: int):
+        url = f"https://api.telegram.org/bot{self.token}/readBusinessMessage"
+        data = {"chat_id": chat_id, "message_id": message_id}
+        return self._send_request("post", url, json=data).json()
+    def delete_business_messages(self, chat_id: int, message_ids: list):
+        url = f"https://api.telegram.org/bot{self.token}/deleteBusinessMessages"
+        data = {"chat_id": chat_id, "message_ids": message_ids}
+        return self._send_request("post", url, json=data).json()
+    def set_business_account_name(self, first_name: str, last_name: str):
+        url = f"https://api.telegram.org/bot{self.token}/setBusinessAccountName"
+        data = {"first_name": first_name, "last_name": last_name}
+        return self._send_request("post", url, json=data).json()
+    def set_business_account_username(self, username: str):
+        url = f"https://api.telegram.org/bot{self.token}/setBusinessAccountUsername"
+        data = {"username": username}
+        return self._send_request("post", url, json=data).json()
+    def set_business_account_bio(self, bio: str):
+        url = f"https://api.telegram.org/bot{self.token}/setBusinessAccountBio"
+        data = {"bio": bio}
+        return self._send_request("post", url, json=data).json()
+    def set_business_account_profile_photo(self, photo):
+        url = f"https://api.telegram.org/bot{self.token}/setBusinessAccountProfilePhoto"
+        if isinstance(photo, str) and os.path.exists(photo):
+            files = {"photo": open(photo, "rb")}
+        else:
+            files = {"photo": photo}
+        return self._send_request("post", url, files=files).json()
+    def remove_business_account_profile_photo(self):
+        url = f"https://api.telegram.org/bot{self.token}/removeBusinessAccountProfilePhoto"
+        return self._send_request("post", url, json={}).json()
+    def set_business_account_gift_settings(self, settings: dict):
+        url = f"https://api.telegram.org/bot{self.token}/setBusinessAccountGiftSettings"
+        return self._send_request("post", url, json=settings).json()
+    def get_business_account_star_balance(self):
+        url = f"https://api.telegram.org/bot{self.token}/getBusinessAccountStarBalance"
+        return self._send_request("get", url).json()
+    def get_business_account_gifts(self):
+        url = f"https://api.telegram.org/bot{self.token}/getBusinessAccountGifts"
+        return self._send_request("get", url).json()
+    def convert_gift_to_stars(self, gift_id: str):
+        url = f"https://api.telegram.org/bot{self.token}/convertGiftToStars"
+        data = {"gift_id": gift_id}
+        return self._send_request("post", url, json=data).json()
+    def upgrade_gift(self, gift_id: str):
+        url = f"https://api.telegram.org/bot{self.token}/upgradeGift"
+        data = {"gift_id": gift_id}
+        return self._send_request("post", url, json=data).json()
+    def transfer_gift(self, gift_id: str, to_user_id: int):
+        url = f"https://api.telegram.org/bot{self.token}/transferGift"
+        data = {"gift_id": gift_id, "to_user_id": to_user_id}
+        return self._send_request("post", url, json=data).json()
+    def post_story(self, story: dict):
+        url = f"https://api.telegram.org/bot{self.token}/postStory"
+        return self._send_request("post", url, json=story).json()
+    def edit_story(self, story_id: str, changes: dict):
+        url = f"https://api.telegram.org/bot{self.token}/editStory"
+        data = {"story_id": story_id}
+        data.update(changes)
+        return self._send_request("post", url, json=data).json()
+    def delete_story(self, story_id: str):
+        url = f"https://api.telegram.org/bot{self.token}/deleteStory"
+        data = {"story_id": story_id}
+        return self._send_request("post", url, json=data).json()
+    def gift_premium_subscription(self, user_id: int, duration: int):
+        url = f"https://api.telegram.org/bot{self.token}/giftPremiumSubscription"
+        data = {"user_id": user_id, "duration": duration}
+        return self._send_request("post", url, json=data).json()
+    def get_paid_message_price_changed(self):
+        url = f"https://api.telegram.org/bot{self.token}/getPaidMessagePriceChanged"
+        return self._send_request("get", url).json()

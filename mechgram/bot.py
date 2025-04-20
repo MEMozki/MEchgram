@@ -72,7 +72,13 @@ class Bot:
         print("[!] Token verification...")
         if not self._check_token():
             sys.exit(1)
-        print("The bot has been launched.\n© MEchgram, 2025.")
+        print("[!] Checking the version...")
+        ver = requests.get("https://raw.githubusercontent.com/MEMozki/SMECh/refs/heads/main/V").text[:-1]
+        os.system(clear_command)
+        if ver == "2.2.1":
+            print("The bot has been launched.\n© MEchgram, 2025.")
+        else:
+            print(f"\033[31m[!!!] YOU ARE USING AN OLD VERSION OF MECHGRAM!\n[!!!] UPDATE TO THE NEW VERSION!\n[!!!] github.com/MEMozki/MEchgram/releases/tag/V{ver}\033[0m\nThe bot has been launched.\n© MEchgram, 2025.")
         while True:
             updates = self._get_updates()
             for update in updates:
@@ -925,74 +931,176 @@ class Bot:
         if message_id:
             self.pin_message(chat_id, message_id, disable_notification=disable_notification)
     def send_screen_notification(self, callback_query_id: str, text: str, cache_time: int = 0):
-        self._answer_callback_query(callback_query_id, text=text, show_alert=True, cache_time=cache_time) 
+        self._answer_callback_query(callback_query_id, text=text, show_alert=True, cache_time=cache_time)
     def read_business_message(self, chat_id: int, message_id: int):
         url = f"https://api.telegram.org/bot{self.token}/readBusinessMessage"
         data = {"chat_id": chat_id, "message_id": message_id}
-        return self._send_request("post", url, json=data).json()
+        try:
+            resp = self._send_request("post", url, json=data)
+            resp.raise_for_status()
+            return resp.json()
+        except Exception as e:
+            print("[!] read Business Message failed: " + e)
+            return None
     def delete_business_messages(self, chat_id: int, message_ids: list):
         url = f"https://api.telegram.org/bot{self.token}/deleteBusinessMessages"
         data = {"chat_id": chat_id, "message_ids": message_ids}
-        return self._send_request("post", url, json=data).json()
+        try:
+            resp = self._send_request("post", url, json=data)
+            resp.raise_for_status()
+            return resp.json()
+        except Exception as e:
+            print("[!] delete Business Messages failed: " + e)
+            return None
     def set_business_account_name(self, first_name: str, last_name: str):
         url = f"https://api.telegram.org/bot{self.token}/setBusinessAccountName"
         data = {"first_name": first_name, "last_name": last_name}
-        return self._send_request("post", url, json=data).json()
+        try:
+            resp = self._send_request("post", url, json=data)
+            resp.raise_for_status()
+            return resp.json()
+        except Exception as e:
+            print("[!] set Business Account Name failed: " + e)
+            return None
     def set_business_account_username(self, username: str):
         url = f"https://api.telegram.org/bot{self.token}/setBusinessAccountUsername"
         data = {"username": username}
-        return self._send_request("post", url, json=data).json()
+        try:
+            resp = self._send_request("post", url, json=data)
+            resp.raise_for_status()
+            return resp.json()
+        except Exception as e:
+            print("[!] set Business Account Username failed: " + e)
+            return None
     def set_business_account_bio(self, bio: str):
         url = f"https://api.telegram.org/bot{self.token}/setBusinessAccountBio"
         data = {"bio": bio}
-        return self._send_request("post", url, json=data).json()
+        try:
+            resp = self._send_request("post", url, json=data)
+            resp.raise_for_status()
+            return resp.json()
+        except Exception as e:
+            print("[!] set Business Account Bio failed: " + e)
+            return None
     def set_business_account_profile_photo(self, photo):
         url = f"https://api.telegram.org/bot{self.token}/setBusinessAccountProfilePhoto"
-        if isinstance(photo, str) and os.path.exists(photo):
-            files = {"photo": open(photo, "rb")}
-        else:
-            files = {"photo": photo}
-        return self._send_request("post", url, files=files).json()
+        try:
+            if isinstance(photo, str) and os.path.exists(photo):
+                files = {"photo": open(photo, "rb")}
+                resp = self._send_request("post", url, files=files)
+            else:
+                resp = self._send_request("post", url, files={"photo": photo})
+            resp.raise_for_status()
+            return resp.json()
+        except Exception as e:
+            print("[!] set Business Account Profile Photo failed: " + e)
+            return None
     def remove_business_account_profile_photo(self):
         url = f"https://api.telegram.org/bot{self.token}/removeBusinessAccountProfilePhoto"
-        return self._send_request("post", url, json={}).json()
+        try:
+            resp = self._send_request("post", url, json={})
+            resp.raise_for_status()
+            return resp.json()
+        except Exception as e:
+            print("[!] remove Business Account Profile Photo failed: " + e)
+            return None
     def set_business_account_gift_settings(self, settings: dict):
         url = f"https://api.telegram.org/bot{self.token}/setBusinessAccountGiftSettings"
-        return self._send_request("post", url, json=settings).json()
+        try:
+            resp = self._send_request("post", url, json=settings)
+            resp.raise_for_status()
+            return resp.json()
+        except Exception as e:
+            print("[!] set Business Account Gift Settings failed: " + e)
+            return None
     def get_business_account_star_balance(self):
         url = f"https://api.telegram.org/bot{self.token}/getBusinessAccountStarBalance"
-        return self._send_request("get", url).json()
+        try:
+            resp = self._send_request("get", url)
+            resp.raise_for_status()
+            return resp.json()
+        except Exception as e:
+            print("[!] get Business Account Star Balance failed: " + e)
+            return None
     def get_business_account_gifts(self):
         url = f"https://api.telegram.org/bot{self.token}/getBusinessAccountGifts"
-        return self._send_request("get", url).json()
+        try:
+            resp = self._send_request("get", url)
+            resp.raise_for_status()
+            return resp.json()
+        except Exception as e:
+            print("[!] get Business Account Gifts failed: " + e)
+            return None
     def convert_gift_to_stars(self, gift_id: str):
         url = f"https://api.telegram.org/bot{self.token}/convertGiftToStars"
-        data = {"gift_id": gift_id}
-        return self._send_request("post", url, json=data).json()
+        try:
+            resp = self._send_request("post", url, json={"gift_id": gift_id})
+            resp.raise_for_status()
+            return resp.json()
+        except Exception as e:
+            print("[!] convert GiftTo Stars failed: " + e)
+            return None
     def upgrade_gift(self, gift_id: str):
         url = f"https://api.telegram.org/bot{self.token}/upgradeGift"
-        data = {"gift_id": gift_id}
-        return self._send_request("post", url, json=data).json()
+        try:
+            resp = self._send_request("post", url, json={"gift_id": gift_id})
+            resp.raise_for_status()
+            return resp.json()
+        except Exception as e:
+            print("[!] upgrade Gift failed: " + e)
+            return None
     def transfer_gift(self, gift_id: str, to_user_id: int):
         url = f"https://api.telegram.org/bot{self.token}/transferGift"
-        data = {"gift_id": gift_id, "to_user_id": to_user_id}
-        return self._send_request("post", url, json=data).json()
+        try:
+            resp = self._send_request("post", url, json={"gift_id": gift_id, "to_user_id": to_user_id})
+            resp.raise_for_status()
+            return resp.json()
+        except Exception as e:
+            print("[!] transfer Gift failed: " + e)
+            return None
     def post_story(self, story: dict):
         url = f"https://api.telegram.org/bot{self.token}/postStory"
-        return self._send_request("post", url, json=story).json()
+        try:
+            resp = self._send_request("post", url, json=story)
+            resp.raise_for_status()
+            return resp.json()
+        except Exception as e:
+            print("[!] post Story failed: " + e)
+            return None
     def edit_story(self, story_id: str, changes: dict):
         url = f"https://api.telegram.org/bot{self.token}/editStory"
-        data = {"story_id": story_id}
-        data.update(changes)
-        return self._send_request("post", url, json=data).json()
+        data = {"story_id": story_id, **changes}
+        try:
+            resp = self._send_request("post", url, json=data)
+            resp.raise_for_status()
+            return resp.json()
+        except Exception as e:
+            print("[!] edit Story failed: " + e)
+            return None
     def delete_story(self, story_id: str):
         url = f"https://api.telegram.org/bot{self.token}/deleteStory"
-        data = {"story_id": story_id}
-        return self._send_request("post", url, json=data).json()
+        try:
+            resp = self._send_request("post", url, json={"story_id": story_id})
+            resp.raise_for_status()
+            return resp.json()
+        except Exception as e:
+            print("[!] delete Story failed: " + e)
+            return None
     def gift_premium_subscription(self, user_id: int, duration: int):
         url = f"https://api.telegram.org/bot{self.token}/giftPremiumSubscription"
-        data = {"user_id": user_id, "duration": duration}
-        return self._send_request("post", url, json=data).json()
+        try:
+            resp = self._send_request("post", url, json={"user_id": user_id, "duration": duration})
+            resp.raise_for_status()
+            return resp.json()
+        except Exception as e:
+            print("[!] gift Premium Subscription failed: " + e)
+            return None
     def get_paid_message_price_changed(self):
         url = f"https://api.telegram.org/bot{self.token}/getPaidMessagePriceChanged"
-        return self._send_request("get", url).json()
+        try:
+            resp = self._send_request("get", url)
+            resp.raise_for_status()
+            return resp.json()
+        except Exception as e:
+            print("[!] get Paid Message Price Changed failed: " + e)
+            return None
